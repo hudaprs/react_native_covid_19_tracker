@@ -52,12 +52,12 @@ const Counter = ({
   const onRefresh = useCallback(() => {
     setRefreshing(true)
 
-    fetchCovid()
+    fetchCovid(country)
 
     setTimeout(() => {
       setRefreshing(false)
     }, 2000)
-  }, [])
+  }, [country])
 
   // Fetch All
   useEffect(() => {
