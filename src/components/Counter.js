@@ -1,30 +1,49 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
+// Components
+import ChangeCountryFormModal from './ChangeCountryFormModal'
+
 // Packages
 import NumberFormat from 'react-number-format'
 
 // React Native Component
 import {
+  SafeAreaView,
   View,
   Text,
   ScrollView,
   RefreshControl,
-  StyleSheet
+  StyleSheet,
+  Image,
+  TouchableOpacity
 } from 'react-native'
 
 // Redux
 import { connect } from 'react-redux'
-import { FETCH_COVID_REQUESTED } from '../redux/actions/covidAction'
+import {
+  FETCH_COVID_REQUESTED,
+  FETCH_COUNTRY_REQUESTED
+} from '../redux/actions/covidAction'
+
+// Images
+import CoronaImage from '../img/corona.png'
+
+// Icons
+import FontAwesome from 'react-native-vector-icons/dist/FontAwesome'
 
 const Counter = ({
   covid: {
     loading,
-    covids: { confirmed, recovered, deaths, lastUpdate }
+    covids: { confirmed, recovered, deaths, lastUpdate },
+    countries
   },
-  fetchCovid
+  fetchCovid,
+  fetchCountries
 }) => {
   const [refreshing, setRefreshing] = useState(false)
+  const [modal, setModal] = useState(false)
+  const [country, setCountry] = useState('')
 
   const makeToLocaleDateString = (date) => {
     return new Date(date).toLocaleDateString()
@@ -40,101 +59,145 @@ const Counter = ({
     }, 2000)
   }, [])
 
+  // Fetch All
   useEffect(() => {
-    fetchCovid()
+    fetchCovid(country)
+
+    // eslint-disable-next-line
+  }, [country])
+
+  // Fetch Country
+  useEffect(() => {
+    fetchCountries()
 
     // eslint-disable-next-line
   }, [])
 
-  if (loading || !confirmed) {
+  if (loading || !confirmed || !countries) {
     return <Text>Loading...</Text>
+  } else {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <Image source={CoronaImage} style={styles.img} />
+
+          {country != '' && (
+            <Text style={styles.heading}>
+              COVID-19 in <Text style={styles.headingBold}>{country}</Text>
+            </Text>
+          )}
+
+          {/* Infected */}
+          <View style={[styles.card, styles.infected]}>
+            <Text style={styles.cardTitle}>Infected</Text>
+            <Text style={styles.cardCounter}>
+              <NumberFormat
+                value={confirmed.value}
+                displayType={'text'}
+                thousandSeparator={true}
+                prefix={''}
+                renderText={(value) => <Text>{value}</Text>}
+              />
+            </Text>
+            <Text style={styles.cardDate}>
+              {makeToLocaleDateString(lastUpdate)}
+            </Text>
+            <Text style={styles.cardDescription}>
+              Number of active cases of COVID-19
+            </Text>
+          </View>
+
+          {/* Recovered */}
+          <View style={[styles.card, styles.recovered]}>
+            <Text style={styles.cardTitle}>Recovered</Text>
+            <Text style={styles.cardCounter}>
+              <NumberFormat
+                value={recovered.value}
+                displayType={'text'}
+                thousandSeparator={true}
+                prefix={''}
+                renderText={(value) => <Text>{value}</Text>}
+              />
+            </Text>
+            <Text style={styles.cardDate}>
+              {makeToLocaleDateString(lastUpdate)}
+            </Text>
+            <Text style={styles.cardDescription}>
+              Number of recovered from COVID-19
+            </Text>
+          </View>
+
+          {/* Deaths */}
+          <View style={[styles.card, styles.deaths]}>
+            <Text style={styles.cardTitle}>Deaths</Text>
+            <Text style={styles.cardCounter}>
+              <NumberFormat
+                value={deaths.value}
+                displayType={'text'}
+                thousandSeparator={true}
+                prefix={''}
+                renderText={(value) => <Text>{value}</Text>}
+              />
+            </Text>
+            <Text style={styles.cardDate}>
+              {makeToLocaleDateString(lastUpdate)}
+            </Text>
+            <Text style={styles.cardDescription}>
+              Number of deaths cause of COVID-19
+            </Text>
+          </View>
+        </ScrollView>
+        {/* Floating Button */}
+        <TouchableOpacity
+          onPress={() => setModal(!modal)}
+          style={styles.floatingButton}>
+          <FontAwesome name="list" size={20} style={styles.floatButtonIcon} />
+        </TouchableOpacity>
+
+        {/* Modal */}
+        <ChangeCountryFormModal
+          modal={modal}
+          setModal={setModal}
+          countries={countries}
+          country={country}
+          setCountry={setCountry}
+        />
+      </SafeAreaView>
+    )
   }
-
-  return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      {/* Infected */}
-      <View style={[styles.card, styles.infected]}>
-        <Text style={styles.cardTitle}>Infected</Text>
-        <Text style={styles.cardCounter}>
-          <NumberFormat
-            value={confirmed.value}
-            displayType={'text'}
-            thousandSeparator={true}
-            prefix={''}
-            renderText={(value) => <Text>{value}</Text>}
-          />
-        </Text>
-        <Text style={styles.cardDate}>
-          {makeToLocaleDateString(lastUpdate)}
-        </Text>
-        <Text style={styles.cardDescription}>
-          Number of active cases of COVID-19
-        </Text>
-      </View>
-
-      {/* Recovered */}
-      <View style={[styles.card, styles.recovered]}>
-        <Text style={styles.cardTitle}>Recovered</Text>
-        <Text style={styles.cardCounter}>
-          <NumberFormat
-            value={recovered.value}
-            displayType={'text'}
-            thousandSeparator={true}
-            prefix={''}
-            renderText={(value) => <Text>{value}</Text>}
-          />
-        </Text>
-        <Text style={styles.cardDate}>
-          {makeToLocaleDateString(lastUpdate)}
-        </Text>
-        <Text style={styles.cardDescription}>
-          Number of recovered from COVID-19
-        </Text>
-      </View>
-
-      {/* Deaths */}
-      <View style={[styles.card, styles.deaths]}>
-        <Text style={styles.cardTitle}>Deaths</Text>
-        <Text style={styles.cardCounter}>
-          <NumberFormat
-            value={deaths.value}
-            displayType={'text'}
-            thousandSeparator={true}
-            prefix={''}
-            renderText={(value) => <Text>{value}</Text>}
-          />
-        </Text>
-        <Text style={styles.cardDate}>
-          {makeToLocaleDateString(lastUpdate)}
-        </Text>
-        <Text style={styles.cardDescription}>
-          Number of deaths cause of COVID-19
-        </Text>
-      </View>
-    </ScrollView>
-  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
     backgroundColor: '#f4f4f4'
+  },
+  img: {
+    width: '100%',
+    marginVertical: 20,
+    resizeMode: 'contain'
+  },
+  heading: {
+    fontSize: 20,
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  headingBold: {
+    fontWeight: 'bold'
   },
   card: {
     backgroundColor: '#fff',
     width: '100%',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    height: '32%',
     borderRadius: 5,
-    elevation: 5,
-    marginBottom: 10,
+    elevation: 8,
+    marginBottom: 20,
     borderBottomWidth: 20
   },
   infected: {
@@ -157,10 +220,29 @@ const styles = StyleSheet.create({
   },
   cardDate: {
     color: '#757575',
-    fontSize: 16
+    fontSize: 16,
+    marginVertical: 10
   },
   cardDescription: {
     fontSize: 14
+  },
+  floatingButton: {
+    position: 'absolute',
+    right: 15,
+    bottom: 20,
+    backgroundColor: '#36D4C1',
+    color: '#fff',
+    width: 50,
+    height: 50,
+    borderRadius: 50 / 2,
+    textAlign: 'center',
+    overflow: 'hidden',
+    elevation: 10
+  },
+  floatButtonIcon: {
+    marginTop: 15,
+    height: 50,
+    textAlign: 'center'
   }
 })
 
@@ -175,7 +257,9 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  fetchCovid: () => dispatch({ type: FETCH_COVID_REQUESTED })
+  fetchCovid: (country) =>
+    dispatch({ type: FETCH_COVID_REQUESTED, payload: country }),
+  fetchCountries: () => dispatch({ type: FETCH_COUNTRY_REQUESTED })
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Counter)

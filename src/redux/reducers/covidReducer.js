@@ -1,8 +1,9 @@
-import { SET_LOADING, FETCH_COVID } from '../actions/covidAction'
+import { SET_LOADING, FETCH_COVID, FETCH_COUNTRY } from '../actions/covidAction'
 
 const initialState = {
   loading: false,
-  covids: []
+  covids: [],
+  countries: []
 }
 
 export default (state = initialState, { type, payload }) => {
@@ -16,6 +17,12 @@ export default (state = initialState, { type, payload }) => {
       return {
         ...state,
         covids: payload,
+        loading: false
+      }
+    case FETCH_COUNTRY:
+      return {
+        ...state,
+        countries: payload,
         loading: false
       }
     default:
