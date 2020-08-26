@@ -1,10 +1,8 @@
+import 'react-native-gesture-handler'
 import React from 'react'
 
-// React Native Component
-import { View } from 'react-native'
-
-// Components
-import Counter from './src/components/Counter'
+// Navigations
+import RootStackNavigation from './src/navigations/RootStackNavigation'
 
 // Redux
 import { Provider } from 'react-redux'
@@ -13,7 +11,7 @@ import store from './src/redux/store'
 const App = () => {
   return (
     <Provider store={store}>
-      <Counter />
+      <RootStackNavigation />
     </Provider>
   )
 }

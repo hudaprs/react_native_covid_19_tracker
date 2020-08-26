@@ -153,9 +153,11 @@ const Counter = ({
         </ScrollView>
         {/* Floating Button */}
         <TouchableOpacity
-          onPress={() => setModal(!modal)}
+          onPress={() => {
+            setModal(!modal)
+          }}
           style={styles.floatingButton}>
-          <FontAwesome name="list" size={20} style={styles.floatButtonIcon} />
+          <FontAwesome name='list' size={20} style={styles.floatButtonIcon} />
         </TouchableOpacity>
 
         {/* Modal */}
